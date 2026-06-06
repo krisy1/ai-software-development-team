@@ -64,8 +64,15 @@ def run_generation_pipeline(
         # Execute the pipeline
         pipeline = get_pipeline()
 
-        # LangGraph invoke is sync (agent nodes handle their own async internally)
-        final_state = pipeline.invoke(state)
+        # All nodes in the pipeline are async def — use ainvoke() instead of invoke()
+        # asyncio.run() bridges the sync Celery task to the async LangGraph runtime.
+        # The configurable thread_id is required when using MemorySaver checkpointing.
+        final_state = asyncio.run(
+            pipeline.ainvoke(
+                state,
+                config={"configurable": {"thread_id": project_id}},
+            )
+        )
 
         summary = state_summary(final_state)
         logger.info(
