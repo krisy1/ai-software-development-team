@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import uuid4
+
 from app.graph.state import create_initial_state, state_summary
 
 
@@ -13,6 +15,7 @@ class TestGraphState:
         assert state["warnings"] == []
         assert state["revision"] == 0
         assert isinstance(state["project_id"], str)
+        assert state["resume_mode"] is False
 
     def test_state_with_constraints(self, sample_idea: str):
         constraints = {"tech_stack": ["python", "fastapi"]}

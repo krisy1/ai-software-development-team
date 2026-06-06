@@ -52,6 +52,9 @@ class GraphState(TypedDict):
     review_attempts: int
     max_review_attempts: int
 
+    # === Resume Support ===
+    resume_mode: bool  # True when state was loaded from a checkpoint for resumption
+
     # === Step Tracking ===
     completed_steps: Annotated[list[str], operator.add]
     pending_steps: Annotated[list[str], operator.add]
@@ -102,6 +105,8 @@ def create_initial_state(
         # Review loop
         "review_attempts": 0,
         "max_review_attempts": max_review_attempts,
+        # Resume
+        "resume_mode": False,
         # Step tracking
         "completed_steps": [],
         "pending_steps": [

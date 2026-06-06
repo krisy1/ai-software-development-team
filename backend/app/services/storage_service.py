@@ -18,6 +18,7 @@ CHECKPOINTS_DIR = STORAGE_DIR / "checkpoints"
 BACKUPS_DIR = STORAGE_DIR / "backups"
 GENERATED_CODE_DIR = STORAGE_DIR / "generated_code"
 MANIFESTS_DIR = STORAGE_DIR / "manifests"
+LOGS_DIR = STORAGE_DIR / "logs"
 
 
 class StorageService:
@@ -33,7 +34,7 @@ class StorageService:
     # ── Directory setup ───────────────────────────────────────────
 
     def _ensure_dirs(self) -> None:
-        for d in (CHECKPOINTS_DIR, BACKUPS_DIR, GENERATED_CODE_DIR, MANIFESTS_DIR):
+        for d in (CHECKPOINTS_DIR, BACKUPS_DIR, GENERATED_CODE_DIR, MANIFESTS_DIR, LOGS_DIR):
             d.mkdir(parents=True, exist_ok=True)
 
     # ── Checkpoints ───────────────────────────────────────────────
@@ -184,6 +185,36 @@ class StorageService:
         if not path.exists():
             return None
         return json.loads(path.read_text())
+
+    # ── Execution logs ────────────────────────────────────────────
+
+    def save_execution_log(
+        self,
+        project_id: str,
+        log_entry: dict[str, Any],
+    ) -> Path:
+        """Persist an execution log entry for a pipeline step.
+
+        Logs are stored as newline-delimited JSON (NDJSON) per project:
+        ``logs/{project_id}.ndjson``
+        """
+        path = LOGS_DIR / f"{project_id}.ndjson"
+        with path.open("a") as f:
+            f.write(json.dumps(log_entry, default=str) + "\n")
+        return path
+
+    def load_execution_logs(self, project_id: str) -> list[dict[str, Any]]:
+        """Load all execution log entries for a project."""
+        path = LOGS_DIR / f"{project_id}.ndjson"
+        if not path.exists():
+            return []
+        entries: list[dict[str, Any]] = []
+        with path.open() as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    entries.append(json.loads(line))
+        return entries
 
     # ── Export ────────────────────────────────────────────────────
 

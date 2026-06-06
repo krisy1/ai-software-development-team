@@ -135,6 +135,91 @@ def build_pipeline() -> StateGraph:
     return pipeline
 
 
+# ── Checkpoint resumption ────────────────────────────────────────
+
+
+def _clean_pending_steps(completed_steps: list[str]) -> list[str]:
+    """Determine which steps remain after a set of completed steps."""
+    all_steps = ["requirements", "architecture", "development", "code_review", "testing", "documentation"]
+    return [s for s in all_steps if s not in completed_steps]
+
+
+def resume_from_checkpoint(
+    checkpoint_path: str,
+    fresh_pipeline: bool = False,
+) -> tuple[StateGraph, GraphState]:
+    """Resume pipeline execution from a saved checkpoint.
+
+    Loads the checkpoint, reconstructs the GraphState with ``resume_mode=True``,
+    and returns a fresh pipeline + state ready for ``pipeline.invoke(state)``.
+
+    Completed steps are automatically skipped (nodes are no-ops via
+    ``_should_skip`` in ``nodes.py``). The pipeline fast-forwards to
+    the first uncompleted step.
+
+    Args:
+        checkpoint_path: Path to a ``.json`` checkpoint file created by
+            ``StorageService.save_checkpoint()``.
+        fresh_pipeline: If True, builds a new pipeline instance instead
+            of using the singleton. Use this to avoid cross-contamination
+            from previous pipeline runs.
+
+    Returns:
+        A tuple of ``(pipeline, state)`` ready for ``pipeline.invoke(state)``.
+
+    Raises:
+        FileNotFoundError: If the checkpoint path does not exist.
+    """
+    from pathlib import Path
+
+    from app.services.storage_service import storage_service
+
+    path = Path(checkpoint_path)
+    checkpoint = storage_service.load_checkpoint(path)
+    raw_state = checkpoint.get("state", {})
+
+    completed = raw_state.get("completed_steps", [])
+    pending = _clean_pending_steps(completed)
+
+    state: GraphState = {
+        "idea": raw_state.get("idea", ""),
+        "constraints": raw_state.get("constraints"),
+        "project_id": raw_state.get("project_id", checkpoint.get("project_id", "unknown")),
+        "status": "running",
+        "current_agent": None,
+        "errors": checkpoint.get("errors", raw_state.get("errors", [])),
+        "warnings": checkpoint.get("warnings", raw_state.get("warnings", [])),
+        "requirements": raw_state.get("requirements"),
+        "architecture": raw_state.get("architecture"),
+        "source_code": raw_state.get("source_code"),
+        "test_suite": raw_state.get("test_suite"),
+        "documentation": raw_state.get("documentation"),
+        "review_report": raw_state.get("review_report"),
+        "start_time": raw_state.get("start_time", checkpoint.get("timestamp")),
+        "end_time": None,
+        "revision": raw_state.get("revision", 0),
+        "token_usage": checkpoint.get("token_usage", raw_state.get("token_usage", [])),
+        "agent_results": raw_state.get("agent_results", []),
+        "review_attempts": raw_state.get("review_attempts", 0),
+        "max_review_attempts": raw_state.get("max_review_attempts", 3),
+        "resume_mode": True,
+        "completed_steps": completed,
+        "pending_steps": pending,
+    }
+
+    pipeline = build_pipeline() if fresh_pipeline else get_pipeline()
+
+    logger.info(
+        "pipeline_resumed",
+        project_id=state["project_id"],
+        completed=completed,
+        pending=pending,
+        checkpoint=checkpoint_path,
+    )
+
+    return pipeline, state
+
+
 # Pre-compiled singleton
 _pipeline_instance: StateGraph | None = None
 
