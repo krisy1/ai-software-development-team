@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from app.agents.registry import registry as agent_registry
+from app.agents import registry as agent_registry_module
 from app.core.exceptions import AppException
 from app.core.logging import get_logger
 from app.graph.state import GraphState
@@ -38,9 +38,10 @@ def _should_skip(state: GraphState, agent_name: str) -> bool:
 
 
 def _get_registry():
-    if agent_registry is None:
+    reg = agent_registry_module.registry
+    if reg is None:
         raise AppException("Agent registry not initialized. Call init_registry() during startup.")
-    return agent_registry
+    return reg
 
 
 def _save_step_checkpoint(state: GraphState, agent_name: str) -> None:
