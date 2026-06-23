@@ -17,28 +17,19 @@ from app.core.security import (
 
 
 class TestPasswordHashing:
-    # Note: These tests are xfailed due to passlib incompatibility with
-    # bcrypt 5.0.0 on Python 3.13. The production code is correct but
-    # the upstream bcrypt library changed its API. Fix: pin bcrypt<4.1
-    # or replace passlib with direct bcrypt usage.
-
-    @pytest.mark.xfail(reason="passlib incompatible with bcrypt 5.0.0 on Python 3.13", strict=False)
     def test_hash_password_returns_string(self):
         result = hash_password("my_secure_password")
         assert isinstance(result, str)
         assert len(result) > 10
 
-    @pytest.mark.xfail(reason="passlib incompatible with bcrypt 5.0.0 on Python 3.13", strict=False)
     def test_verify_password_correct(self):
         hashed = hash_password("correct_password")
         assert verify_password("correct_password", hashed) is True
 
-    @pytest.mark.xfail(reason="passlib incompatible with bcrypt 5.0.0 on Python 3.13", strict=False)
     def test_verify_password_incorrect(self):
         hashed = hash_password("correct_password")
         assert verify_password("wrong_password", hashed) is False
 
-    @pytest.mark.xfail(reason="passlib incompatible with bcrypt 5.0.0 on Python 3.13", strict=False)
     def test_same_password_different_hashes(self):
         h1 = hash_password("same_password")
         h2 = hash_password("same_password")
