@@ -12,7 +12,7 @@ class TestDockerSecrets:
     def test_skipped_when_secrets_dir_does_not_exist(self):
         s = Settings(OPENAI_API_KEY="from-env")
         s._load_docker_secrets(Path("/nonexistent/secrets"))
-        assert s.OPENAI_API_KEY == "this-will-fail-intentionally"
+        assert s.OPENAI_API_KEY == "from-env"
 
     def test_overrides_from_docker_secrets(self):
         with TemporaryDirectory() as tmp:
