@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -11,7 +12,11 @@ from app.core.logging import get_logger
 from app.db.repositories.project_repo import ProjectRepository
 from app.db.session import get_db_session
 from app.models.domain.enums import ProjectStatus
-from app.models.schemas.requests import CreateProjectRequest, RefineProjectRequest
+from app.models.schemas.requests import (
+    CreateProjectRequest,
+    ExportProjectRequest,
+    RefineProjectRequest,
+)
 from app.models.schemas.responses import (
     CreateProjectResponse,
     PaginatedResponse,
@@ -243,3 +248,62 @@ async def get_project_status(
         "updated_at": project.updated_at.isoformat(),
         "completed_at": project.completed_at.isoformat() if project.completed_at else None,
     }
+
+
+@router.post("/{project_id}/export")
+async def export_project(
+    project_id: UUID,
+    request: ExportProjectRequest,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Export a generated project to GitHub.
+
+    Creates a repository and pushes all generated artifacts
+    (requirements, architecture, source code, tests, documentation)
+    as files.
+    """
+    from app.services.github_service import github_service
+
+    project_repo = ProjectRepository(session)
+    project = await project_repo.get_with_artifacts(project_id)
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project {project_id} not found",
+        )
+
+    if project.status.value not in ("completed",):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Cannot export project with status '{project.status.value}'. "
+                "Only completed projects can be exported."
+            ),
+        )
+
+    # Build project_data dict from artifacts
+    project_data: dict[str, Any] = {}
+    for artifact in project.artifacts:
+        artifact_type = artifact.artifact_type
+        project_data[artifact_type] = artifact.content
+
+    try:
+        result = await github_service.export_project(
+            project_id=str(project_id),
+            project_data=project_data,
+            repo_name=request.repository_name,
+            organization=request.organization,
+            private=request.private,
+        )
+        return result
+    except Exception as e:
+        from app.core.exceptions import AppException
+
+        if isinstance(e, AppException):
+            raise
+        logger.error("export_failed", project_id=str(project_id), error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Export failed: {str(e)}",
+        ) from e

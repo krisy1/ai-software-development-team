@@ -122,7 +122,9 @@
     - `ws.py`: New WebSocket endpoint at `/api/v1/projects/{project_id}/ws` subscribes to Redis channel and forwards events to client
     - `tasks.py`: Publishes `pipeline_started`/`pipeline_completed`/`pipeline_error` events
     - `nodes.py`: Each agent node publishes `agent_started`/`agent_completed`/`agent_error` events
-- [ ] **5.2** Implement GitHub export feature behind ExportProjectRequest schema
+- [x] **5.2** Implement GitHub export feature behind ExportProjectRequest schema
+    - `services/github_service.py` — creates GitHub repos, pushes all artifacts as files
+    - `POST /api/v1/projects/{id}/export` — endpoint using `ExportProjectRequest`
 - [ ] **5.3** Add Prometheus + Grafana to docker-compose.yml
 - [ ] **5.4** Clean up dead scaffolding (docker/, scripts/, src/)
 - [ ] **5.5** Consolidate duplicate dependency declarations (root requirements.txt vs backend/requirements/)
