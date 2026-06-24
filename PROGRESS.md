@@ -108,7 +108,7 @@
     - `.github/workflows/ci.yml` — full CI pipeline on push/PR to main
     - Services: PostgreSQL (ai_dev_team + ai_dev_team_test), Redis
     - Steps: ruff → pytest (with coverage) → mypy → frontend build
-- [ ] **4.2** Gate merges to main on workflow passing (GitHub repo setting: branch protection rule requiring CI status check)
+- [ ] **4.2** Gate merges to main on workflow passing — *GitHub repo setting (branch protection), cannot be done in code. Configure via Settings > Branches > Add rule > Require status checks to pass before merging.*
 - [x] **4.3** Add Docker image build workflow for backend and frontend
     - `.github/workflows/docker-build.yml` — builds + pushes to ghcr.io on main push and version tags
     - Uses docker/metadata-action for semver + SHA tagging, GHA cache layers
@@ -132,14 +132,38 @@
     - `docker-compose.yml` — added `prometheus` and `grafana` services
     - `server.py` — conditional `prometheus-fastapi-instrumentator` at `/metrics`
     - Added `prometheus-fastapi-instrumentator` to `base.txt`
-- [ ] **5.4** Clean up dead scaffolding (docker/, scripts/, src/)
-- [ ] **5.5** Consolidate duplicate dependency declarations (root requirements.txt vs backend/requirements/)
-- [ ] **5.6** Fix stale docstring in pipeline.py (resume_from_checkpoint still references invoke)
+- [x] **5.4** Clean up dead scaffolding (docker/, scripts/, src/) — removed empty scripts/ and src/
+- [x] **5.5** Consolidate duplicate dependency declarations (root requirements.txt vs backend/requirements/) — removed root requirements.txt
+- [x] **5.6** Fix stale docstring in pipeline.py (resume_from_checkpoint still references invoke) — invoke → ainvoke
 
 ---
 
 ## Phase 6 — Frontend polish
 
-- [ ] **6.1** Make sidebar/layout responsive on mobile (beyond hidden/flex placeholder)
-- [ ] **6.2** Switch MonitorPage and ResultsPage from polling to WebSocket subscription
-- [ ] **6.3** Add production environment config (API base URL not hardcoded to localhost:8000)
+- [x] **6.1** Mobile-responsive sidebar with hamburger toggle, overlay, and slide transition
+- [x] **6.2** Switch MonitorPage/ResultsPage from polling to WebSocket subscription
+    - New `useWebSocket` generic hook with reconnection logic
+    - `useProjectDetail` and `useProjectStatus` use WS events to invalidate react-query cache
+    - Slow 30s fallback poll for WS-disconnect resilience
+    - nginx config updated with WebSocket upgrade headers and 1h timeout
+    - MonitorPage shows "live updates" indicator
+- [x] **6.3** Use `VITE_API_BASE_URL` env var in `api.ts` instead of hardcoded `/api/v1`
+
+---
+
+## Phase 7 — Pre-release hardening
+
+- [x] **7.1** Full-stack re-verification and fix deployment bugs
+    - Fixed `STORAGE_ROOT` path resolution in Docker (was resolving to `/`)
+    - Fixed named volume directory permissions (pre-create + chown before `USER app`)
+    - Fixed `prometheus-fastapi-instrumentator` v7 incompatibility with Starlette → upgraded to v8
+    - Rebuilt Docker stack from clean state, Alembic migrations applied
+    - Verified auth: no-credentials → 401, valid API key → 201
+    - Pipeline runs through Celery + LangGraph (Groq rate-limited but code path verified)
+    - Rate-limit middleware confirmed active (X-RateLimit headers present)
+    - Frontend: fixed nginx.conf WS proxy headers, fixed health check IPv6 issue
+- [ ] **7.2** Prove branch protection — open PR with deliberate test failure, verify CI blocks merge, fix and merge
+- [ ] **7.3** Replace placeholder secrets (SECRET_KEY, API_KEY)
+- [ ] **7.4** Consolidate historical report files into docs/history/
+- [ ] **7.5** Update README.md with current setup, auth, test suite, CI instructions
+- [ ] **7.6** Tag v1.0.0 release
