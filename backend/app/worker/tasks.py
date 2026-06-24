@@ -9,6 +9,7 @@ from app.graph.pipeline import get_pipeline
 from app.graph.state import create_initial_state, state_summary
 from app.services.llm_service import llm_service
 from app.worker.celery_app import celery_app
+from app.worker.events import EventPublisher
 
 logger = get_logger(__name__)
 
@@ -41,7 +42,10 @@ def run_generation_pipeline(
         task_id=self.request.id,
     )
 
+    publisher = EventPublisher(project_id)
+
     try:
+        asyncio.run(publisher.pipeline_started())
         # Initialize registry if needed (fallback for solo pool / direct task dispatch)
         if not hasattr(run_generation_pipeline, "_registry_initialized"):
             if llm_service.is_available:
@@ -82,6 +86,8 @@ def run_generation_pipeline(
             summary=summary,
         )
 
+        asyncio.run(publisher.pipeline_completed(final_state["status"], summary))
+
         return {
             "project_id": project_id,
             "status": final_state["status"],
@@ -103,4 +109,7 @@ def run_generation_pipeline(
             error=str(exc),
             task_id=self.request.id,
         )
-        raise self.retry(exc=exc)
+        from contextlib import suppress
+        with suppress(Exception):
+            asyncio.run(publisher.pipeline_error(str(exc)))
+        raise self.retry(exc=exc) from exc

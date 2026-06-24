@@ -7,6 +7,7 @@ from app.core.exceptions import AppException
 from app.core.logging import get_logger
 from app.graph.state import GraphState
 from app.graph.validation import validate_artifact
+from app.worker.events import EventPublisher
 
 logger = get_logger(__name__)
 
@@ -35,6 +36,10 @@ def _should_skip(state: GraphState, agent_name: str) -> bool:
         return False
     step_name, artifact_key = entry
     return step_name in state.get("completed_steps", []) and state.get(artifact_key) is not None
+
+
+def _publisher(state: GraphState) -> EventPublisher:
+    return EventPublisher(state["project_id"])
 
 
 def _get_registry():
@@ -81,8 +86,10 @@ async def requirements_node(state: GraphState) -> dict:
         logger.info("requirements_agent skipped (resume)")
         return {"current_agent": "requirements"}
     agent = _get_registry().get_agent("requirements")
+    pub = _publisher(state)
 
     try:
+        await pub.agent_started("requirements")
         updates = await agent.process(state)
         errors = validate_artifact("requirements", updates.get("requirements"))
         if errors:
@@ -90,9 +97,12 @@ async def requirements_node(state: GraphState) -> dict:
         updates["completed_steps"] = ["requirements"]
         merged = {**state, **updates}
         _save_step_checkpoint(merged, "requirements")
+        tu = (updates.get("token_usage") or [{}])[-1]
+        await pub.agent_completed("requirements", updates.get("duration_ms", 0), tu)
         return updates
     except Exception as e:
         logger.error("requirements_node_failed", error=str(e))
+        await pub.agent_error("requirements", str(e))
         return _error_updates(state, "requirements", str(e))
 
 
@@ -103,8 +113,10 @@ async def architect_node(state: GraphState) -> dict:
         logger.info("architect_agent skipped (resume)")
         return {"current_agent": "architect"}
     agent = _get_registry().get_agent("architect")
+    pub = _publisher(state)
 
     try:
+        await pub.agent_started("architect")
         updates = await agent.process(state)
         errors = validate_artifact("architect", updates.get("architecture"))
         if errors:
@@ -112,9 +124,12 @@ async def architect_node(state: GraphState) -> dict:
         updates["completed_steps"] = ["architecture"]
         merged = {**state, **updates}
         _save_step_checkpoint(merged, "architect")
+        tu = (updates.get("token_usage") or [{}])[-1]
+        await pub.agent_completed("architect", updates.get("duration_ms", 0), tu)
         return updates
     except Exception as e:
         logger.error("architect_node_failed", error=str(e))
+        await pub.agent_error("architect", str(e))
         return _error_updates(state, "architecture", str(e))
 
 
@@ -135,8 +150,10 @@ async def developer_node(state: GraphState) -> dict:
         logger.info("developer_agent skipped (resume)")
         return {"current_agent": "developer"}
     agent = _get_registry().get_agent("developer")
+    pub = _publisher(state)
 
     try:
+        await pub.agent_started("developer")
         updates = await agent.process(state)
         errors = validate_artifact("developer", updates.get("source_code"))
         if errors:
@@ -145,9 +162,12 @@ async def developer_node(state: GraphState) -> dict:
             updates["completed_steps"] = ["development"]
         merged = {**state, **updates}
         _save_step_checkpoint(merged, "developer")
+        tu = (updates.get("token_usage") or [{}])[-1]
+        await pub.agent_completed("developer", updates.get("duration_ms", 0), tu)
         return updates
     except Exception as e:
         logger.error("developer_node_failed", error=str(e))
+        await pub.agent_error("developer", str(e))
         return _error_updates(state, "development", str(e))
 
 
@@ -166,8 +186,10 @@ async def code_review_node(state: GraphState) -> dict:
         logger.info("code_review_agent skipped (resume)")
         return {"current_agent": "code_review"}
     agent = _get_registry().get_agent("code_review")
+    pub = _publisher(state)
 
     try:
+        await pub.agent_started("code_review")
         updates = await agent.process(state)
         errors = validate_artifact("code_review", updates.get("review_report"))
         if errors:
@@ -176,9 +198,12 @@ async def code_review_node(state: GraphState) -> dict:
         updates["completed_steps"] = ["code_review"]
         merged = {**state, **updates}
         _save_step_checkpoint(merged, "code_review")
+        tu = (updates.get("token_usage") or [{}])[-1]
+        await pub.agent_completed("code_review", updates.get("duration_ms", 0), tu)
         return updates
     except Exception as e:
         logger.error("code_review_node_failed", error=str(e))
+        await pub.agent_error("code_review", str(e))
         return _error_updates(state, "code_review", str(e))
 
 
@@ -189,8 +214,10 @@ async def tester_node(state: GraphState) -> dict:
         logger.info("tester_agent skipped (resume)")
         return {"current_agent": "tester"}
     agent = _get_registry().get_agent("tester")
+    pub = _publisher(state)
 
     try:
+        await pub.agent_started("tester")
         updates = await agent.process(state)
         errors = validate_artifact("tester", updates.get("test_suite"))
         if errors:
@@ -198,9 +225,12 @@ async def tester_node(state: GraphState) -> dict:
         updates["completed_steps"] = ["testing"]
         merged = {**state, **updates}
         _save_step_checkpoint(merged, "tester")
+        tu = (updates.get("token_usage") or [{}])[-1]
+        await pub.agent_completed("tester", updates.get("duration_ms", 0), tu)
         return updates
     except Exception as e:
         logger.error("tester_node_failed", error=str(e))
+        await pub.agent_error("tester", str(e))
         return _error_updates(state, "testing", str(e))
 
 
@@ -211,8 +241,10 @@ async def documentation_node(state: GraphState) -> dict:
         logger.info("documentation_agent skipped (resume)")
         return {"current_agent": "documentation"}
     agent = _get_registry().get_agent("documentation")
+    pub = _publisher(state)
 
     try:
+        await pub.agent_started("documentation")
         updates = await agent.process(state)
         errors = validate_artifact("documentation", updates.get("documentation"))
         if errors:
@@ -220,9 +252,12 @@ async def documentation_node(state: GraphState) -> dict:
         updates["completed_steps"] = ["documentation"]
         merged = {**state, **updates}
         _save_step_checkpoint(merged, "documentation")
+        tu = (updates.get("token_usage") or [{}])[-1]
+        await pub.agent_completed("documentation", updates.get("duration_ms", 0), tu)
         return updates
     except Exception as e:
         logger.error("documentation_node_failed", error=str(e))
+        await pub.agent_error("documentation", str(e))
         return _error_updates(state, "documentation", str(e))
 
 
