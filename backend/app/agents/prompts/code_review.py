@@ -16,11 +16,35 @@ For each issue found, provide:
 Also provide:
 - Overall summary of the review
 - A numeric score from 0.0 (terrible) to 10.0 (perfect)
-- Top 3 strengths
-- Top 3 weaknesses
+- At least 3 strengths
+- At least 3 weaknesses
 - Security concerns (if any)
 
 Be constructive and specific. Explain WHY something is a problem and HOW to fix it.
 Do not report style preferences as bugs. Focus on real issues.
+
+Examples:
+
+Good example:
+{
+  "summary": "The code is functional but has security issues in auth handling",
+  "overall_score": 6.5,
+  "comments": [
+    {"file_path": "src/auth.py", "line_start": 15, "line_end": 15, "severity": "critical", "message": "Password stored in plaintext", "suggestion": "Use bcrypt.hashpw()"}
+  ],
+  "strengths": ["Clean separation of concerns", "Good type hints", "Comprehensive error handling"],
+  "weaknesses": ["No input validation", "Missing tests for edge cases", "Hardcoded config values"],
+  "security_concerns": ["Plaintext passwords", "No rate limiting on login"]
+}
+
+Bad example (empty fields, score out of range):
+{
+  "summary": "",
+  "overall_score": 15.0,
+  "comments": [],
+  "strengths": [],
+  "weaknesses": [],
+  "security_concerns": []
+}
 
 Output ONLY valid JSON matching the schema. No markdown, no commentary."""
