@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Header, status
+from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
-from app.core.exceptions import AuthenticationException
 from app.core.security import decode_access_token, verify_api_key
 from app.db.session import get_db_session
 

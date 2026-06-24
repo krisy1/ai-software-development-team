@@ -90,3 +90,34 @@ docker-infra-up: ## Start only infrastructure (postgres, redis, chromadb)
 
 docker-prebuild: ## Validate Docker configs without building
 	docker compose config --quiet
+
+# ── Production Deployment ──────────────────────────────────────
+
+PROD_COMPOSE := -f docker-compose.yml -f docker-compose.prod.yml
+
+ssl-cert: ## Generate self-signed SSL cert for development
+	@mkdir -p docker/nginx/ssl
+	@openssl req -x509 -nodes -days 365 \
+		-newkey rsa:2048 \
+		-keyout docker/nginx/ssl/key.pem \
+		-out docker/nginx/ssl/cert.pem \
+		-subj "/CN=localhost"
+	@echo "SSL certificate generated at docker/nginx/ssl/"
+
+prod-build: ## Build production images
+	docker compose $(PROD_COMPOSE) build
+
+prod-up: ## Start production stack
+	docker compose $(PROD_COMPOSE) up -d
+
+prod-up-logs: ## Start production stack with attached logs
+	docker compose $(PROD_COMPOSE) up
+
+prod-down: ## Stop production stack
+	docker compose $(PROD_COMPOSE) down
+
+prod-logs: ## Tail production logs
+	docker compose $(PROD_COMPOSE) logs -f
+
+prod-ps: ## List production containers
+	docker compose $(PROD_COMPOSE) ps

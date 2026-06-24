@@ -1,0 +1,43 @@
+version: "3.9"
+
+# ────────────────────────────────────────────────────────────────
+# Production overlay — adds nginx reverse proxy (with SSL) in
+# front of the API, and overrides the API service to not expose
+# its port directly.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# To generate a self-signed cert for development:
+#   openssl req -x509 -nodes -days 365 \
+#     -newkey rsa:2048 \
+#     -keyout docker/nginx/ssl/key.pem \
+#     -out docker/nginx/ssl/cert.pem \
+#     -subj "/CN=localhost"
+#
+# For production, replace with real certificates from Let's Encrypt
+# or your certificate authority.
+# ────────────────────────────────────────────────────────────────
+
+services:
+  # ── Reverse proxy (nginx) ────────────────────────────────────
+  reverse-proxy:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: ai-dev-reverse-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/ssl:/etc/ssl/certs:ro
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - ai-dev-network
+
+  # ── Override: API no longer needs direct port exposure ──────
+  api:
+    ports: []
