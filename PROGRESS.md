@@ -64,8 +64,18 @@
     - Hooked sanitization via _build_state_updates override
     - Few-shot prompt: added good/bad JSON examples
     - 22 new unit tests covering all validation rules and sanitization
-- [ ] **2.4** Documentation Agent: add minimal validation + few-shot prompt
-- [ ] **2.5** Add dedicated unit test files for all four agents
+- [x] **2.4** Documentation Agent: add minimal validation + few-shot prompt
+    - Deep validation: non-empty README and setup_guide, minimum length checks (100/50 chars)
+    - Sanitization: strips whitespace from all fields
+    - Hooked sanitization via _build_state_updates override
+    - Few-shot prompt: added good/bad JSON examples
+    - 12 new unit tests covering validation and sanitization
+- [x] **2.5** Add dedicated unit test files for all four agents (completed within 2.1–2.4 above)
+    - `tests/unit/test_developer_agent.py` — 20 tests
+    - `tests/unit/test_tester_agent.py` — 19 tests
+    - `tests/unit/test_code_review_agent.py` — 22 tests
+    - `tests/unit/test_documentation_agent.py` — 12 tests
+    - Total: 73 new tests for all four agents
 
 ---
 

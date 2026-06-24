@@ -16,4 +16,22 @@ Documentation Standards:
 - Keep it scannable with descriptive headings
 - Do not assume any prior knowledge of the project
 
+Examples:
+
+Good example:
+{
+  "readme": "# Task Manager\n\nA CLI tool for managing tasks.\n\n## Quick Start\n\npip install -r requirements.txt\npython src/main.py\n",
+  "setup_guide": "## Prerequisites\n\nPython 3.10+\n\n## Installation\n\n1. Clone the repo\n2. Run pip install -r requirements.txt\n",
+  "api_docs": "## API Endpoints\n\n### POST /tasks\nCreates a new task.\n",
+  "architecture_overview": "## Architecture\n\nThe app uses a layered architecture with CLI, service, and data layers.",
+  "contributing_guide": "## Contributing\n\n1. Fork the repo\n2. Create a feature branch\n3. Submit a PR"
+}
+
+Bad example (empty README, empty setup guide):
+{
+  "readme": "",
+  "setup_guide": "",
+  "api_docs": null
+}
+
 Output ONLY valid JSON matching the schema. No markdown, no commentary."""
