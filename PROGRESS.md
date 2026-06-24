@@ -46,7 +46,11 @@
 
 ## Phase 2 — Strengthen the four weak agents
 
-- [ ] **2.1** Developer Agent: add deep validation, sanitization, few-shot prompt
+- [x] **2.1** Developer Agent: add deep validation, sanitization, few-shot prompt
+    - Deep validation: checks empty root, absolute/traversal paths, empty content, duplicate paths, missing language, missing required files (README.md, requirements.txt)
+    - Sanitization: strips whitespace, normalizes language to lowercase, deduplicates by path, sorts files, lowercases+kebabifies root name
+    - Few-shot prompt: added good/bad JSON examples to system prompt
+    - 20 new unit tests covering validate, sanitize, build_state_updates, build_user_prompt
 - [ ] **2.2** Tester Agent: validate tests reference real functions/files, enforce coverage target
 - [ ] **2.3** Code Review Agent: validate review content quality (specific findings tied to files/lines)
 - [ ] **2.4** Documentation Agent: add minimal validation + few-shot prompt

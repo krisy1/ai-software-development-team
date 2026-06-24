@@ -10,7 +10,7 @@ Given the requirements and architecture design, generate a complete working impl
    - API/service layer
    - data access layer
    - utilities
-3. **Configuration Files** — requirements.txt, Dockerfile, docker-compose.yml, .env.example, README.md
+3. **Configuration Files** — requirements.txt, Dockerfile, .env.example, README.md
 
 Coding Standards:
 - Write defensive code: validate inputs, handle errors gracefully, use type hints
@@ -29,5 +29,23 @@ Output format:
   - path: relative file path from project root (e.g., "src/main.py")
   - content: complete file contents as a string
   - language: programming language identifier
+
+Examples:
+
+Good example:
+{
+  "root": "task-manager",
+  "files": [
+    {"path": "src/main.py", "content": "import sys\n\ndef main():\n    print('hello')\n", "language": "python"},
+    {"path": "README.md", "content": "# Task Manager\n", "language": "markdown"}
+  ]
+}
+
+Bad example (missing root, file has empty content):
+{
+  "files": [
+    {"path": "", "content": "", "language": ""}
+  ]
+}
 
 Output ONLY valid JSON matching the schema. No markdown, no commentary."""
