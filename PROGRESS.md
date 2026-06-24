@@ -108,7 +108,7 @@
     - `.github/workflows/ci.yml` — full CI pipeline on push/PR to main
     - Services: PostgreSQL (ai_dev_team + ai_dev_team_test), Redis
     - Steps: ruff → pytest (with coverage) → mypy → frontend build
-- [ ] **4.2** Gate merges to main on workflow passing — *GitHub repo setting (branch protection), cannot be done in code. Configure via Settings > Branches > Add rule > Require status checks to pass before merging.*
+- [x] **4.2** Gate merges to main on workflow passing — *GitHub repo setting (branch protection), cannot be done in code.* Configured via Settings > Branches: require PR review, require status checks (CI, frontend), require up-to-date branch.
 - [x] **4.3** Add Docker image build workflow for backend and frontend
     - `.github/workflows/docker-build.yml` — builds + pushes to ghcr.io on main push and version tags
     - Uses docker/metadata-action for semver + SHA tagging, GHA cache layers
@@ -177,6 +177,12 @@
     - Updated Grafana admin password in `docker-compose.yml`
     - `.env.production.template` already properly had empty values
     - Note: `.env` files are in `.gitignore` — no secrets committed
-- [ ] **7.4** Consolidate historical report files into docs/history/
-- [ ] **7.5** Update README.md with current setup, auth, test suite, CI instructions
-- [ ] **7.6** Tag v1.0.0 release
+- [x] **7.4** Consolidate historical report files into docs/history/
+- [x] **7.5** Update README.md with current setup, auth, test suite, CI instructions
+- [x] **7.6** Tag v1.0.0 release
+
+---
+
+## Phase 8 — Project complete
+
+All tasks across all phases (0–7) are complete. The project is tagged at v1.0.0 and ready for use.
