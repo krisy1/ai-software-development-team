@@ -7,20 +7,12 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.agents.registry import init_registry
 from app.api.router import router
 from app.config import settings
 from app.core.exceptions import AppException
 from app.core.logging import get_logger, setup_logging
 from app.core.middleware import register_middleware
-
-try:
-    from prometheus_fastapi_instrumentator import Instrumentator
-
-    HAS_PROMETHEUS = True
-except ImportError:
-    Instrumentator = None
-    HAS_PROMETHEUS = False
-from app.agents.registry import init_registry
 from app.db.base import Base
 from app.db.session import engine
 from app.models.db import (  # noqa: F401 — register all models
@@ -30,6 +22,16 @@ from app.models.db import (  # noqa: F401 — register all models
 )
 from app.services.llm_service import llm_service
 from app.services.vector_store import vector_store
+
+Instrumentator: type | None = None
+HAS_PROMETHEUS = False
+try:
+    from prometheus_fastapi_instrumentator import Instrumentator as _Instrumentator
+
+    Instrumentator = _Instrumentator
+    HAS_PROMETHEUS = True
+except ImportError:
+    pass
 
 logger = get_logger(__name__)
 
@@ -104,7 +106,7 @@ def create_app() -> FastAPI:
     register_middleware(app)
 
     # Prometheus metrics
-    if HAS_PROMETHEUS:
+    if HAS_PROMETHEUS and Instrumentator is not None:
         Instrumentator().instrument(app).expose(app)
 
     # Exception handler
