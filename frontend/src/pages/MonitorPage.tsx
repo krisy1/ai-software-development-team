@@ -12,6 +12,7 @@ import {
   XCircle,
   Clock,
   Eye,
+  Wifi,
 } from 'lucide-react';
 import { AGENT_LABELS, AGENT_ORDER, AGENT_TO_FIELD } from '@/lib/types';
 
@@ -145,8 +146,9 @@ export default function MonitorPage() {
         <Card className="border-blue-500/30 bg-blue-500/5">
           <CardContent className="flex items-center gap-3 py-4">
             <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+            <Wifi className="h-4 w-4 text-blue-400" />
             <p className="text-sm text-muted-foreground">
-              Generation in progress. This page auto-refreshes every 2 seconds.
+              Generation in progress. Receiving live updates.
             </p>
           </CardContent>
         </Card>
