@@ -104,9 +104,14 @@
 
 ## Phase 4 — CI/CD
 
-- [ ] **4.1** Add GitHub Actions workflow: Postgres + Redis services, alembic upgrade, pytest, ruff check, frontend build
-- [ ] **4.2** Gate merges to main on workflow passing
-- [ ] **4.3** Add Docker image build workflow for backend and frontend
+- [x] **4.1** Add GitHub Actions workflow: Postgres + Redis services, alembic upgrade, pytest, ruff check, frontend build
+    - `.github/workflows/ci.yml` — full CI pipeline on push/PR to main
+    - Services: PostgreSQL (ai_dev_team + ai_dev_team_test), Redis
+    - Steps: ruff → pytest (with coverage) → mypy → frontend build
+- [ ] **4.2** Gate merges to main on workflow passing (GitHub repo setting: branch protection rule requiring CI status check)
+- [x] **4.3** Add Docker image build workflow for backend and frontend
+    - `.github/workflows/docker-build.yml` — builds + pushes to ghcr.io on main push and version tags
+    - Uses docker/metadata-action for semver + SHA tagging, GHA cache layers
 
 ---
 
