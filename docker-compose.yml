@@ -168,7 +168,7 @@ services:
     image: grafana/grafana:11.1.0
     container_name: ai-dev-grafana
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_PASSWORD: aa4n4zPXFlTTZNvouUkPig
       GF_INSTALL_PLUGINS: ""
     volumes:
       - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources:ro

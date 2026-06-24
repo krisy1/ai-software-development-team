@@ -162,7 +162,14 @@
     - Pipeline runs through Celery + LangGraph (Groq rate-limited but code path verified)
     - Rate-limit middleware confirmed active (X-RateLimit headers present)
     - Frontend: fixed nginx.conf WS proxy headers, fixed health check IPv6 issue
-- [ ] **7.2** Prove branch protection — open PR with deliberate test failure, verify CI blocks merge, fix and merge
+- [x] **7.2** Prove branch protection — open PR with deliberate test failure, verify CI blocks merge, fix and merge
+    - PR #1 opened with deliberate test failure (af2d438)
+    - CI correctly failed on first commit
+    - Fix commits pushed: ruff (6e79739), mypy (7df973f–89ee549)
+    - CI passed on run #11 after all fixes
+    - Merged to main (89ee549)
+    - Branch protection configured: requires review, CI status checks pass
+    - Note: repo owner can bypass; enforcement applies to other contributors
 - [ ] **7.3** Replace placeholder secrets (SECRET_KEY, API_KEY)
 - [ ] **7.4** Consolidate historical report files into docs/history/
 - [ ] **7.5** Update README.md with current setup, auth, test suite, CI instructions
