@@ -187,6 +187,11 @@
 
 All tasks across all phases (0–7) are complete. The project is tagged at v1.0.0 and ready for use.
 
+## Bug fixes applied post-v1.0.0
+
+- **Status persistence**: Celery task now calls `_update_project_status()` after pipeline execution to write `status`, `completed_at`, and `error_message` to the Project DB row. Previously the LangGraph nodes only updated the in-memory graph state dict — the database never reflected the terminal state (stuck at `pending`).
+- **Redis event-loop-closed**: `get_redis()` now tracks the running event loop via `_last_loop_id` and recreates the connection when a different loop calls it (Celery's `ForkPoolWorker` creates a fresh event loop per `asyncio.run()`). The Celery task was also refactored from multiple `asyncio.run()` calls into a single `_run()` async function to avoid cross-loop contamination.
+
 ### Future task — Re-enable ghcr.io image publishing
 
 When a deployment target exists, `docker-build.yml` needs:
