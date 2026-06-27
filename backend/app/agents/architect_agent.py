@@ -230,7 +230,7 @@ class ArchitectAgent(BaseAgent):
                 errors.append(f"Tech stack entry '{key}' has vague value: '{value}'")
 
         # ── Database design checks ──────────────────────────────
-        if output.database_design:
+        if output.database_design and output.database_design.tables:
             db = output.database_design
             if len(db.tables) < 2:
                 errors.append(f"Too few database tables: {len(db.tables)} (minimum 2)")
@@ -259,7 +259,7 @@ class ArchitectAgent(BaseAgent):
                         errors.append(f"Table '{table.name}' column at index {j} missing 'name' or 'type'")
 
         # ── API spec checks ─────────────────────────────────────
-        if output.api_spec:
+        if output.api_spec and output.api_spec.endpoints:
             api = output.api_spec
             if len(api.endpoints) < 3:
                 errors.append(f"Too few API endpoints: {len(api.endpoints)} (minimum 3)")
@@ -379,9 +379,9 @@ class ArchitectAgent(BaseAgent):
             ]
             api_spec = APISpec(
                 protocol=output.api_spec.protocol.strip().upper(),
-                base_url=output.api_spec.base_url.strip(),
+                base_url=output.api_spec.base_url.strip() if output.api_spec.base_url else None,
                 endpoints=endpoints,
-                auth_method=output.api_spec.auth_method.strip(),
+                auth_method=output.api_spec.auth_method.strip() if output.api_spec.auth_method else None,
                 rate_limiting=output.api_spec.rate_limiting.strip() if output.api_spec.rate_limiting else None,
                 versioning_strategy=output.api_spec.versioning_strategy.strip()
                 if output.api_spec.versioning_strategy

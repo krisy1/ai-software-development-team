@@ -179,13 +179,13 @@ Given a Software Requirements Specification (SRS), produce a comprehensive archi
 
 ## Output Quality Rules
 
-1. **Minimum 3 components** — Covering API gateway, business logic, and data persistence
+1. **Minimum 3 components** — Covering core logic, data, and entry points
 2. **Every component needs 2+ responsibilities** — Clear, specific, non-overlapping
 3. **Tech stack must have 5+ entries** — Language, framework, database, cache, messaging
 4. **Data flow must have 4+ steps** — Follow a request from entry to response
 5. **Security must have 3+ considerations** — Auth, encryption, secrets management minimum
-6. **Database design must have 2+ tables** — With columns, types, constraints, and relationships
-7. **API spec must have 3+ endpoints** — Covering the core CRUD operations
+6. **Database design** — Include with 2+ tables IF the project uses a database. For CLI tools, libraries, or scripts with no database, set ``"database_design": null``.
+7. **API spec** — Include with 3+ endpoints IF the project exposes an API. For CLI tools or libraries with no API, set ``"api_spec": null`` (or use ``protocol: "NONE"`` with empty endpoints).
 8. **Define clear bounded contexts** between components with explicit API contracts
 9. **Include a Mermaid.js diagram** for the architecture overview when possible
 10. **Deployment strategy must address scaling** — How does it handle 10x load?
@@ -210,6 +210,8 @@ Output: *(see the example in the schema above — use that level of detail and s
 
 - Output MUST be ONLY valid JSON. No markdown fences, no explanation, no commentary before or after.
 - Every field in the schema is REQUIRED unless explicitly marked as optional (null allowed).
-- Minimum: 3 components, 5 tech stack entries, 4 data flow steps, 3 security considerations, 2 database tables, 3 API endpoints.
+- Minimum: 3 components, 5 tech stack entries, 4 data flow steps, 3 security considerations.
+- ``database_design`` and ``api_spec`` are OPTIONAL (can be null). For CLI tools / libraries / scripts with no database and no API, set them to ``null``.
 - Component names should be business-relevant (e.g., "Order Service", not "Component A").
-- Technology choices must include specific versions where possible (e.g., "FastAPI 0.111+", not just "FastAPI")."""
+- Technology choices must include specific versions where possible (e.g., "FastAPI 0.111+", not just "FastAPI").
+- The tech_stack must include ``language``, ``framework``, and ``database`` keys. For CLI tools with no database, use a descriptive value like ``"None (file-based)"`` or ``"N/A"``. For CLI tools with no framework, use ``"N/A (CLI tool)"`` or ``"argparse"``."""

@@ -72,8 +72,8 @@ class DatabaseTable(BaseModel):
 
 
 class DatabaseDesign(BaseModel):
-    engine: str = Field(min_length=1, description="e.g., PostgreSQL 16, MySQL 8")
-    tables: list[DatabaseTable] = Field(min_length=1)
+    engine: str = Field(min_length=1, description="e.g., PostgreSQL 16, MySQL 8, or N/A for CLI tools")
+    tables: list[DatabaseTable] = Field(default_factory=list)
     orm: str | None = Field(None, description="e.g., SQLAlchemy 2.0, Prisma, Drizzle")
     migration_tool: str | None = Field(None, description="e.g., Alembic, Prisma Migrate")
     caching_strategy: str | None = Field(None, description="e.g., Redis caching with cache-aside pattern")
@@ -96,10 +96,10 @@ class APIEndpoint(BaseModel):
 
 
 class APISpec(BaseModel):
-    protocol: str = Field(default="REST", pattern=r"^(REST|GraphQL|gRPC|WebSocket|SOAP)$")
-    base_url: str = Field(min_length=1, description="e.g., /api/v1")
-    endpoints: list[APIEndpoint] = Field(min_length=1)
-    auth_method: str = Field(default="JWT", description="e.g., JWT, OAuth 2.0, API keys, Session")
+    protocol: str = Field(default="REST", pattern=r"^(REST|GraphQL|gRPC|WebSocket|SOAP|NONE)$")
+    base_url: str | None = Field(None, description="e.g., /api/v1, or null for CLI tools / libraries")
+    endpoints: list[APIEndpoint] = Field(default_factory=list)
+    auth_method: str | None = Field(None, description="e.g., JWT, OAuth 2.0, API keys, or null for CLI tools")
     rate_limiting: str | None = Field(None, description="e.g., 1000 req/min per user")
     versioning_strategy: str | None = Field(None, description="e.g., URL path versioning /v1/, /v2/")
 

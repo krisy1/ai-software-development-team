@@ -201,6 +201,27 @@ class TestDatabaseDesign:
                 description="No columns",
             )
 
+    def test_empty_tables_allowed_for_cli_tools(self):
+        """CLI tools/libraries with no database: empty tables list is valid."""
+        design = DatabaseDesign(
+            engine="N/A (CLI tool)",
+            tables=[],
+        )
+        assert len(design.tables) == 0
+
+    def test_none_protocol_valid(self):
+        """NONE protocol is valid for CLI tools with no API."""
+        spec = APISpec(
+            protocol="NONE",
+            base_url=None,
+            endpoints=[],
+            auth_method=None,
+        )
+        assert spec.protocol == "NONE"
+        assert spec.base_url is None
+        assert len(spec.endpoints) == 0
+        assert spec.auth_method is None
+
 
 class TestAPISpec:
     def test_valid_api_spec(self):

@@ -270,6 +270,166 @@ class TestArchitectureDocSchema:
         with pytest.raises(ValidationError):
             doc.title = "Changed"
 
+    def test_cli_tool_without_api_or_database(self):
+        """A CLI tool (no API, no database) must be valid."""
+        doc = ArchitectureDoc(
+            title="Markdown Blog CLI",
+            overview="A command-line tool that scans markdown files and generates a static HTML blog with tags, search, RSS feed, dark mode, and syntax highlighting.",
+            architecture_pattern="Pipeline",
+            components=[
+                ComponentSpec(
+                    name="Scanner",
+                    description="Walks the directory tree and collects all markdown files with metadata.",
+                    technology="Python 3.12",
+                    responsibilities=["Recursively scan directories", "Extract frontmatter metadata"],
+                    dependencies=[],
+                ),
+                ComponentSpec(
+                    name="Renderer",
+                    description="Converts markdown to HTML with syntax highlighting and template rendering.",
+                    technology="Python-Markdown 3.6",
+                    responsibilities=["Convert markdown to HTML", "Apply syntax highlighting"],
+                    dependencies=["Scanner"],
+                ),
+                ComponentSpec(
+                    name="Generator",
+                    description="Assembles rendered pages into a static site with index, tags, and RSS feed.",
+                    technology="Jinja2 3.1",
+                    responsibilities=["Generate index page", "Build tag cloud pages", "Generate RSS feed"],
+                    dependencies=["Renderer"],
+                ),
+            ],
+            data_flow=[
+                {"step": "1", "description": "Scanner walks directory and collects markdown files"},
+                {"step": "2", "description": "Each file is parsed for frontmatter (title, tags, date)"},
+                {"step": "3", "description": "Renderer converts markdown body to HTML"},
+                {"step": "4", "description": "Generator assembles pages with navigation, tags, and RSS"},
+                {"step": "5", "description": "Output written to destination directory as static HTML"},
+            ],
+            tech_stack={
+                "language": "Python 3.12",
+                "framework": "argparse (stdlib)",
+                "database": "None (file-based)",
+                "markdown": "Python-Markdown 3.6",
+                "templating": "Jinja2 3.1",
+                "highlighting": "Pygments 2.18",
+            },
+            diagram_mermaid=None,
+            deployment_strategy="Install via pip. Run as a CLI command with input/output directory arguments. Packaged as a single PyPI package.",
+            security_considerations=[
+                "Sanitize HTML output to prevent XSS in rendered content",
+                "Validate file paths to prevent directory traversal",
+                "Set secure file permissions on output directory",
+            ],
+            database_design=None,
+            api_spec=None,
+            folder_structure=FolderStructure(
+                root="md2blog",
+                entries=[
+                    FolderEntry(name="md2blog", type="directory", children=[
+                        FolderEntry(name="scanner.py", type="file"),
+                        FolderEntry(name="renderer.py", type="file"),
+                        FolderEntry(name="generator.py", type="file"),
+                    ]),
+                    FolderEntry(name="tests", type="directory", children=[
+                        FolderEntry(name="test_scanner.py", type="file"),
+                    ]),
+                    FolderEntry(name="README.md", type="file"),
+                    FolderEntry(name="pyproject.toml", type="file"),
+                ],
+            ),
+        )
+        assert doc.database_design is None
+        assert doc.api_spec is None
+        # Also verify the validate_output method accepts it
+        agent = ArchitectAgent(llm_service=None)
+        validated = agent._validate_output(doc)
+        assert validated is doc
+        # Verify sanitize works with null api_spec/database_design
+        sanitized = agent._sanitize_output(doc)
+        assert sanitized.database_design is None
+        assert sanitized.api_spec is None
+        assert sanitized.title == "Markdown Blog CLI"
+
+    def test_cli_tool_with_none_protocol_and_empty_lists(self):
+        """A CLI tool that provides api_spec/database_design with NONE/empty must also be valid."""
+        doc = ArchitectureDoc(
+            title="File Sorter CLI",
+            overview="A command-line utility that sorts files in a directory by type, date, or size with configurable rules.",
+            architecture_pattern="Pipeline",
+            components=[
+                ComponentSpec(
+                    name="FileScanner",
+                    description="Scans directory and collects file metadata.",
+                    technology="Python 3.12",
+                    responsibilities=["Scan directories recursively", "Collect file metadata"],
+                    dependencies=[],
+                ),
+                ComponentSpec(
+                    name="Sorter",
+                    description="Applies sorting rules and organizes files.",
+                    technology="Python 3.12",
+                    responsibilities=["Apply sorting rules", "Move/copy files to target directories"],
+                    dependencies=["FileScanner"],
+                ),
+                ComponentSpec(
+                    name="ConfigManager",
+                    description="Manages user configuration and sorting rules.",
+                    technology="Python 3.12",
+                    responsibilities=["Parse config files", "Validate rules"],
+                    dependencies=[],
+                ),
+            ],
+            data_flow=[
+                {"step": "1", "description": "Read config and sorting rules"},
+                {"step": "2", "description": "Scan source directory"},
+                {"step": "3", "description": "Apply rules to each file"},
+                {"step": "4", "description": "Move files to target directories"},
+            ],
+            tech_stack={
+                "language": "Python 3.12",
+                "framework": "argparse (stdlib)",
+                "database": "None (file-based)",
+                "testing": "pytest 8.0",
+                "packaging": "setuptools 68.0",
+            },
+            deployment_strategy="Distributed as PyPI package. Users pip install and run as CLI command.",
+            security_considerations=[
+                "Validate file paths",
+                "Sanitize user input",
+                "Set safe default permissions",
+            ],
+            database_design=DatabaseDesign(
+                engine="N/A (CLI tool, no database)",
+                tables=[],
+            ),
+            api_spec=APISpec(
+                protocol="NONE",
+                base_url=None,
+                endpoints=[],
+                auth_method=None,
+            ),
+        )
+        assert doc.database_design is not None
+        assert len(doc.database_design.tables) == 0
+        assert doc.api_spec is not None
+        assert doc.api_spec.protocol == "NONE"
+        assert doc.api_spec.base_url is None
+        assert len(doc.api_spec.endpoints) == 0
+        assert doc.api_spec.auth_method is None
+        # Verify validate_output with empty tables/endpoints
+        agent = ArchitectAgent(llm_service=None)
+        validated = agent._validate_output(doc)
+        assert validated is doc
+        # Verify sanitize works
+        sanitized = agent._sanitize_output(doc)
+        assert sanitized.database_design is not None
+        assert len(sanitized.database_design.tables) == 0
+        assert sanitized.api_spec is not None
+        assert sanitized.api_spec.protocol == "NONE"
+        assert sanitized.api_spec.base_url is None
+        assert sanitized.api_spec.auth_method is None
+
 
 class TestArchitectAgent:
     """Tests for the ArchitectAgent itself."""
